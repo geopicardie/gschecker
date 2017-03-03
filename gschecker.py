@@ -69,7 +69,8 @@ class Featuretype():
                 uxml = self.gs.getxml(mdurl).encode('utf8')
                 xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
                 self.md = Inspirobot.MD(xml)
-                self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
                 logging.info('%s.%s : fileIdentifier %s' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name'], self.md.fileIdentifier))
                 return self.md
                 #~ except:
@@ -100,7 +101,8 @@ class Coverage():
                 uxml = self.gs.getxml(mdurl).encode('utf8')
                 xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
                 self.md = Inspirobot.MD(xml)
-                self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
                 logging.info('%s.%s : fileIdentifier %s' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name'], self.md.fileIdentifier))
                 return self.md
                 #~ except:
