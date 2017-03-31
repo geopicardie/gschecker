@@ -64,18 +64,18 @@ class Featuretype():
         if self.json['featureType'].has_key('metadataLinks'):
             xmlmd = filter((lambda x: x['type']=='text/xml'), self.json['featureType']['metadataLinks']['metadataLink'])
             if len(xmlmd) > 0:
-                #~ try:
-                mdurl = xmlmd[0]['content']
-                uxml = self.gs.getxml(mdurl).encode('utf8')
-                xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
-                self.md = Inspirobot.MD(xml)
-                #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
-                self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
-                logging.info('%s.%s : fileIdentifier %s' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name'], self.md.fileIdentifier))
-                return self.md
-                #~ except:
-                    #~ logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
-                    #~ return None
+                try:
+                    mdurl = xmlmd[0]['content']
+                    uxml = self.gs.getxml(mdurl).encode('utf8')
+                    xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
+                    self.md = Inspirobot.MD(xml)
+                    #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                    self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
+                    logging.info('%s.%s : fileIdentifier %s' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name'], self.md.fileIdentifier))
+                    return self.md
+                except:
+                    logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
+                    return None
             else:
                 logging.error('%s.%s : no metadataURL' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name']))
                 return None
@@ -96,18 +96,18 @@ class Coverage():
         if self.json['coverage'].has_key('metadataLinks'):
             xmlmd = filter((lambda x: x['type']=='text/xml'), self.json['coverage']['metadataLinks']['metadataLink'])
             if len(xmlmd) > 0:
-                #~ try:
-                mdurl = xmlmd[0]['content']
-                uxml = self.gs.getxml(mdurl).encode('utf8')
-                xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
-                self.md = Inspirobot.MD(xml)
-                #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
-                self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
-                logging.info('%s.%s : fileIdentifier %s' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name'], self.md.fileIdentifier))
-                return self.md
-                #~ except:
-                    #~ logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
-                    #~ return None
+                try:
+                    mdurl = xmlmd[0]['content']
+                    uxml = self.gs.getxml(mdurl).encode('utf8')
+                    xml = etree.tostring(etree.XML(uxml), encoding='UTF-8', xml_declaration=False)
+                    self.md = Inspirobot.MD(xml)
+                    #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
+                    self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
+                    logging.info('%s.%s : fileIdentifier %s' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name'], self.md.fileIdentifier))
+                    return self.md
+                except:
+                    logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
+                    return None
             else:
                 logging.error('%s.%s : no metadataURL' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name']))
                 return None
@@ -241,6 +241,8 @@ class Workspace():
                 self.mditems['wfs']['bbox']['maxy'] = max_y_ft
 
                 self.mditems['wfs']['success'] = True
+                
+                #logging.info('self.mditems.wfs %s', self.mditems['wfs'])
 
             if len(coverages) > 0:
 
@@ -309,16 +311,26 @@ class Workspace():
         return self.name
                 
     def getFeaturetypes(self):
+        #logging.info('GETFEATURETYPE')
         fts = self.gs.rest('workspaces'+'/'+self.name+'/featuretypes')['featureTypes']
         if fts:
             for ft in self.gs.rest('workspaces'+'/'+self.name+'/featuretypes')[u'featureTypes'][u'featureType']:
-                self.featureTypes.append(Featuretype(self.gs, ft['href']))
+                try:
+                    self.featureTypes.append(Featuretype(self.gs, ft['href']))
+                    #logging.info('getFeaturetypes %s', ft['href'])
+                except Exception, err:
+                    logging.error("can't append featuretype %s, %s"%(ft['href'], err))
 
     def getCoverages(self):
+        #logging.info('GETCOVERAGE')
         cvs = self.gs.rest('workspaces'+'/'+self.name+'/coverages')['coverages']
         if cvs:
             for cv in self.gs.rest('workspaces'+'/'+self.name+'/coverages')[u'coverages'][u'coverage']:
-                self.coverages.append(Coverage(self.gs, cv['href']))
+                try:
+                    self.coverages.append(Coverage(self.gs, cv['href']))
+                    #logging.info('getCoverages %s', cv['href'])
+                except Exception, err:
+                    logging.error("can't append coverage %s, %s"%(cv['href'], err))
 
     def getWFSMetadata(self):
         if self.mditems['wfs']['success'] == True:
@@ -416,6 +428,9 @@ class GS():
 
 geoserver = GS(cfg["domain"], cfg["username"], cfg["password"])
 for namespace in cfg["namespaces"]:
+    logging.info('--------------------------------')
+    logging.info('Process namespace %s', namespace)
+    
     ws = Workspace(geoserver, namespace)
 
     xml = ws.getWFSMetadata()
