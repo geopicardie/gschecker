@@ -1,2 +1,4 @@
 OWSLib
 pyshp
+jinja2
+lxml
