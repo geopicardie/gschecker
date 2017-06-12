@@ -235,7 +235,7 @@ class Workspace():
                 self.mditems['wfs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
                 self.mditems['wfs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
                 self.mditems['wfs']['dateRevision'] =   self.mditems['wfs']['dateCreation']
-                self.mditems['wfs']['getCapabilitiesUrl'] = urlparse.urljoin('http://'+cfg['domain'], '/geoserver/'+name+'/wfs?SERVICE=WFS&amp;REQUEST=GetCapabilities&amp;')
+                self.mditems['wfs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wfs?SERVICE=WFS&amp;REQUEST=GetCapabilities&amp;')
                 self.mditems['wfs']['title'] = self.wfs_json['wfs']['title']
                 self.mditems['wfs']['abstract'] = self.wfs_json['wfs']['abstrct']
                 self.mditems['wfs']['bbox']['minx'] = min_x_ft
@@ -263,7 +263,7 @@ class Workspace():
                 self.mditems['wcs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
                 self.mditems['wcs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
                 self.mditems['wcs']['dateRevision'] =   self.mditems['wcs']['dateCreation']
-                self.mditems['wcs']['getCapabilitiesUrl'] = urlparse.urljoin('http://'+cfg['domain'], '/geoserver/'+name+'/wcs?SERVICE=WCS&amp;REQUEST=GetCapabilities&amp;')
+                self.mditems['wcs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wcs?SERVICE=WCS&amp;REQUEST=GetCapabilities&amp;')
                 self.mditems['wcs']['title'] = self.wcs_json['wcs']['title']
                 self.mditems['wcs']['abstract'] = self.wcs_json['wcs']['abstrct']
                 self.mditems['wcs']['bbox']['minx'] = min_x_cv
@@ -279,7 +279,7 @@ class Workspace():
             self.mditems['wms']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
             self.mditems['wms']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
             self.mditems['wms']['dateRevision'] =   self.mditems['wms']['dateCreation']
-            self.mditems['wms']['getCapabilitiesUrl'] = urlparse.urljoin('http://'+cfg['domain'], '/geoserver/'+name+'/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities&amp;')
+            self.mditems['wms']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wms?SERVICE=WMS&amp;REQUEST=GetCapabilities&amp;')
             self.mditems['wms']['title'] = self.wms_json['wms']['title']
             self.mditems['wms']['abstract'] = self.wms_json['wms']['abstrct']
 
@@ -406,7 +406,7 @@ class GS():
         return json.loads(result)
 
     def rest(self, restpath):
-        url = urlparse.urljoin('http://'+self.domain, '/geoserver/rest/'+restpath)
+        url = urlparse.urljoin('https://'+self.domain, '/geoserver/rest/'+restpath)
         logger.debug("fetching %s"%url)
         response = self.admin_opener.open(url)
         result = response.read().decode("UTF-8")
