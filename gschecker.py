@@ -36,8 +36,11 @@ cfg = {
     ]
 }
 
-
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('gschecker')
+fh = logging.FileHandler('gschecker.log')
+fh.setLevel(logging.DEBUG)
+logger.addHandler(fh)
+#logging.basicConfig(level=logging.DEBUG)
 
 cfgjson = 'gsconfig.json'
 if not(os.path.isfile(cfgjson)):
@@ -71,13 +74,13 @@ class Featuretype():
                     self.md = Inspirobot.MD(xml)
                     #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
                     self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
-                    logging.info('%s.%s : fileIdentifier %s' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name'], self.md.fileIdentifier))
+                    logger.info('%s.%s : fileIdentifier %s' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name'], self.md.fileIdentifier))
                     return self.md
                 except:
-                    logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
+                    logger.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
                     return None
             else:
-                logging.error('%s.%s : no metadataURL' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name']))
+                logger.error('%s.%s : no metadataURL' % (self.json['featureType']['namespace']['name'], self.json['featureType']['name']))
                 return None
 
 
@@ -103,13 +106,13 @@ class Coverage():
                     self.md = Inspirobot.MD(xml)
                     #self.mdUrl = urlparse.urljoin(cfg['xmlurlprefix'], self.md.fileIdentifier)
                     self.mdUrl = cfg['xmlurlprefix'] + self.md.fileIdentifier
-                    logging.info('%s.%s : fileIdentifier %s' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name'], self.md.fileIdentifier))
+                    logger.info('%s.%s : fileIdentifier %s' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name'], self.md.fileIdentifier))
                     return self.md
                 except:
-                    logging.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
+                    logger.error('%s.%s : can\'t resolve %s'%(self.json['featureType']['namespace']['name'], self.json['featureType']['name'], mdurl))
                     return None
             else:
-                logging.error('%s.%s : no metadataURL' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name']))
+                logger.error('%s.%s : no metadataURL' % (self.json['coverage']['namespace']['name'], self.json['coverage']['name']))
                 return None
 
 
@@ -188,23 +191,23 @@ class Workspace():
         try:
             url = 'services/wfs/workspaces/%s/settings.json?quietOnNotFound=1'%name
             self.wfs_json = self.gs.rest(url)
-            logging.info('got WFS REST conf for %s', name)
+            logger.info('got WFS REST conf for %s', name)
         except Exception, err:
-            logging.error("can't read wfs workspace %s, %s" % (self.name, err))
+            logger.error("can't read wfs workspace %s, %s" % (self.name, err))
 
         try:
             self.wcs_json = self.gs.rest('services/wcs/workspaces/%s/settings.json?quietOnNotFound=1' % name)
-            logging.info('got WCS REST conf for %s', name)
+            logger.info('got WCS REST conf for %s', name)
         except Exception, err:
-            logging.error("cant' read wcs workspace %s, %s" % (self.name, err))
+            logger.error("cant' read wcs workspace %s, %s" % (self.name, err))
 
         try:
             url = 'services/wms/workspaces/%s/settings.json?quietOnNotFound=1' % name
             self.wms_json = self.gs.rest(url)
-            logging.info('got WMS REST conf for %s', name)
+            logger.info('got WMS REST conf for %s', name)
 
         except Exception, err:
-            logging.error("cant' read wms workspace %s, %s" % (self.name, err))
+            logger.error("cant' read wms workspace %s, %s" % (self.name, err))
 
         try:
             # list featuretypes
@@ -242,7 +245,7 @@ class Workspace():
 
                 self.mditems['wfs']['success'] = True
                 
-                #logging.info('self.mditems.wfs %s', self.mditems['wfs'])
+                #logger.info('self.mditems.wfs %s', self.mditems['wfs'])
 
             if len(coverages) > 0:
 
@@ -302,7 +305,7 @@ class Workspace():
                 self.mditems['wms']['success'] = True
 
         except Exception, err:
-            logging.error("can't read workspace %s, %s"%(self.name, err))
+            logger.error("can't read workspace %s, %s"%(self.name, err))
 
     def __str__(self):
         return self.name
@@ -311,26 +314,26 @@ class Workspace():
         return self.name
                 
     def getFeaturetypes(self):
-        #logging.info('GETFEATURETYPE')
+        #logger.info('GETFEATURETYPE')
         fts = self.gs.rest('workspaces'+'/'+self.name+'/featuretypes')['featureTypes']
         if fts:
             for ft in self.gs.rest('workspaces'+'/'+self.name+'/featuretypes')[u'featureTypes'][u'featureType']:
                 try:
                     self.featureTypes.append(Featuretype(self.gs, ft['href']))
-                    #logging.info('getFeaturetypes %s', ft['href'])
+                    #logger.info('getFeaturetypes %s', ft['href'])
                 except Exception, err:
-                    logging.error("can't append featuretype %s, %s"%(ft['href'], err))
+                    logger.error("can't append featuretype %s, %s"%(ft['href'], err))
 
     def getCoverages(self):
-        #logging.info('GETCOVERAGE')
+        #logger.info('GETCOVERAGE')
         cvs = self.gs.rest('workspaces'+'/'+self.name+'/coverages')['coverages']
         if cvs:
             for cv in self.gs.rest('workspaces'+'/'+self.name+'/coverages')[u'coverages'][u'coverage']:
                 try:
                     self.coverages.append(Coverage(self.gs, cv['href']))
-                    #logging.info('getCoverages %s', cv['href'])
+                    #logger.info('getCoverages %s', cv['href'])
                 except Exception, err:
-                    logging.error("can't append coverage %s, %s"%(cv['href'], err))
+                    logger.error("can't append coverage %s, %s"%(cv['href'], err))
 
     def getWFSMetadata(self):
         if self.mditems['wfs']['success'] == True:
@@ -404,7 +407,7 @@ class GS():
 
     def rest(self, restpath):
         url = urlparse.urljoin('http://'+self.domain, '/geoserver/rest/'+restpath)
-        logging.debug("fetching %s"%url)
+        logger.debug("fetching %s"%url)
         response = self.admin_opener.open(url)
         result = response.read().decode("UTF-8")
         response.close()
@@ -428,8 +431,8 @@ class GS():
 
 geoserver = GS(cfg["domain"], cfg["username"], cfg["password"])
 for namespace in cfg["namespaces"]:
-    logging.info('--------------------------------')
-    logging.info('Process namespace %s', namespace)
+    logger.info('--------------------------------')
+    logger.info('Process namespace %s', namespace)
     
     ws = Workspace(geoserver, namespace)
 
