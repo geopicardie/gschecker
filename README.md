@@ -36,9 +36,11 @@ $ pip install -r requirements.txt
 ## Configuration de gschecker
 
 Créer une copie du fichier `gsconfig_geopicardie.json`
+
 Le renommer en `gsconfig.json` et l'adapter.
 
 ## Exécution de gschecker
 
 Exécuter le fichier `gschecker.py`
+
 Les fichiers XML résultants seront créés dans un dossier `results`  
