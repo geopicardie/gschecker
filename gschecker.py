@@ -199,7 +199,7 @@ class Workspace():
             self.wcs_json = self.gs.rest('services/wcs/workspaces/%s/settings.json?quietOnNotFound=1' % name)
             logger.info('got WCS REST conf for %s', name)
         except Exception, err:
-            logger.error("cant' read wcs workspace %s, %s" % (self.name, err))
+            logger.error("can't read wcs workspace %s, %s" % (self.name, err))
 
         try:
             url = 'services/wms/workspaces/%s/settings.json?quietOnNotFound=1' % name
@@ -207,7 +207,7 @@ class Workspace():
             logger.info('got WMS REST conf for %s', name)
 
         except Exception, err:
-            logger.error("cant' read wms workspace %s, %s" % (self.name, err))
+            logger.error("can't read wms workspace %s, %s" % (self.name, err))
 
         try:
             # list featuretypes
@@ -435,6 +435,9 @@ for namespace in cfg["namespaces"]:
     logger.info('Process namespace %s', namespace)
     
     ws = Workspace(geoserver, namespace)
+
+    if not os.path.exists(u"results"):
+        os.makedirs(u"results")
 
     xml = ws.getWFSMetadata()
     if (xml):
