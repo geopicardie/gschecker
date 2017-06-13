@@ -124,6 +124,7 @@ class Workspace():
         self.featureTypes = []
         self.coverages = []
         self.wms_json = False
+        self.wcs_json = False
         self.wfs_json = False
         self.mditems = {
             'wms': {
@@ -196,7 +197,8 @@ class Workspace():
             logger.error("can't read wfs workspace %s, %s" % (self.name, err))
 
         try:
-            self.wcs_json = self.gs.rest('services/wcs/workspaces/%s/settings.json?quietOnNotFound=1' % name)
+            url = 'services/wcs/workspaces/%s/settings.json?quietOnNotFound=1' % name
+            self.wcs_json = self.gs.rest(url)
             logger.info('got WCS REST conf for %s', name)
         except Exception, err:
             logger.error("can't read wcs workspace %s, %s" % (self.name, err))
@@ -221,57 +223,64 @@ class Workspace():
             coverages = filter((lambda x: x.md), self.coverages)
 
             if len(features) > 0:
-                for featureType in features:
-                    self.mditems['featureTypes'].append(featureType)
+                if self.wfs_json:
+                    for featureType in features:
+                        self.mditems['featureTypes'].append(featureType)
 
-                min_x_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['minx']), self.mditems['featureTypes']))
-                min_y_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['miny']), self.mditems['featureTypes']))
-                max_x_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['maxx']), self.mditems['featureTypes']))
-                max_y_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['maxy']), self.mditems['featureTypes']))
+                    min_x_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['minx']), self.mditems['featureTypes']))
+                    min_y_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['miny']), self.mditems['featureTypes']))
+                    max_x_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['maxx']), self.mditems['featureTypes']))
+                    max_y_ft = min(map((lambda f: f.json['featureType']['latLonBoundingBox']['maxy']), self.mditems['featureTypes']))
 
-                self.mditems['wfs']['fileIdentifier'] = cfg['fileIdentifierWfsFormat'].format(name=name)
-                self.mditems['wfs']['htmlUrl'] = urlparse.urljoin(cfg['viewurlprefix'], self.mditems['wfs']['fileIdentifier'])
-                self.mditems['wfs']['xmlUrl'] = urlparse.urljoin(cfg['xmlurlprefix'], self.mditems['wfs']['fileIdentifier'])
-                self.mditems['wfs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
-                self.mditems['wfs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
-                self.mditems['wfs']['dateRevision'] =   self.mditems['wfs']['dateCreation']
-                self.mditems['wfs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wfs?SERVICE=WFS&amp;REQUEST=GetCapabilities&amp;')
-                self.mditems['wfs']['title'] = self.wfs_json['wfs']['title']
-                self.mditems['wfs']['abstract'] = self.wfs_json['wfs']['abstrct']
-                self.mditems['wfs']['bbox']['minx'] = min_x_ft
-                self.mditems['wfs']['bbox']['miny'] = min_y_ft
-                self.mditems['wfs']['bbox']['maxx'] = max_x_ft
-                self.mditems['wfs']['bbox']['maxy'] = max_y_ft
+                    self.mditems['wfs']['fileIdentifier'] = cfg['fileIdentifierWfsFormat'].format(name=name)
+                    self.mditems['wfs']['htmlUrl'] = urlparse.urljoin(cfg['viewurlprefix'], self.mditems['wfs']['fileIdentifier'])
+                    self.mditems['wfs']['xmlUrl'] = urlparse.urljoin(cfg['xmlurlprefix'], self.mditems['wfs']['fileIdentifier'])
+                    self.mditems['wfs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                    self.mditems['wfs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                    self.mditems['wfs']['dateRevision'] =   self.mditems['wfs']['dateCreation']
+                    self.mditems['wfs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wfs?SERVICE=WFS&amp;REQUEST=GetCapabilities&amp;')
+                    self.mditems['wfs']['title'] = self.wfs_json['wfs']['title']
+                    self.mditems['wfs']['abstract'] = self.wfs_json['wfs']['abstrct']
+                    self.mditems['wfs']['bbox']['minx'] = min_x_ft
+                    self.mditems['wfs']['bbox']['miny'] = min_y_ft
+                    self.mditems['wfs']['bbox']['maxx'] = max_x_ft
+                    self.mditems['wfs']['bbox']['maxy'] = max_y_ft
 
-                self.mditems['wfs']['success'] = True
-                
-                #logger.info('self.mditems.wfs %s', self.mditems['wfs'])
+                    self.mditems['wfs']['success'] = True
+
+                    #logger.info('self.mditems.wfs %s', self.mditems['wfs'])
+                else:
+                    logger.error("found features but not WFS conf")
+
 
             if len(coverages) > 0:
+                if self.wcs_json:
+                    for coverage in coverages:
+                        self.mditems['coverages'].append(coverage)
 
-                for coverage in coverages:
-                    self.mditems['coverages'].append(coverage)
+                    min_x_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['minx']), self.mditems['coverages']))
+                    min_y_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['miny']), self.mditems['coverages']))
+                    max_x_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['maxx']), self.mditems['coverages']))
+                    max_y_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['maxy']), self.mditems['coverages']))
 
-                min_x_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['minx']), self.mditems['coverages']))
-                min_y_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['miny']), self.mditems['coverages']))
-                max_x_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['maxx']), self.mditems['coverages']))
-                max_y_cv = min(map((lambda f: f.json['coverage']['latLonBoundingBox']['maxy']), self.mditems['coverages']))
+                    self.mditems['wcs']['fileIdentifier'] = cfg['fileIdentifierWcsFormat'].format(name=name)
+                    self.mditems['wcs']['htmlUrl'] = urlparse.urljoin(cfg['viewurlprefix'], self.mditems['wcs']['fileIdentifier'])
+                    self.mditems['wcs']['xmlUrl'] = urlparse.urljoin(cfg['xmlurlprefix'], self.mditems['wcs']['fileIdentifier'])
+                    self.mditems['wcs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                    self.mditems['wcs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                    self.mditems['wcs']['dateRevision'] =   self.mditems['wcs']['dateCreation']
+                    self.mditems['wcs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wcs?SERVICE=WCS&amp;REQUEST=GetCapabilities&amp;')
+                    self.mditems['wcs']['title'] = self.wcs_json['wcs']['title']
+                    self.mditems['wcs']['abstract'] = self.wcs_json['wcs']['abstrct']
+                    self.mditems['wcs']['bbox']['minx'] = min_x_cv
+                    self.mditems['wcs']['bbox']['miny'] = min_y_cv
+                    self.mditems['wcs']['bbox']['maxx'] = max_x_cv
+                    self.mditems['wcs']['bbox']['maxy'] = max_y_cv
 
-                self.mditems['wcs']['fileIdentifier'] = cfg['fileIdentifierWcsFormat'].format(name=name)
-                self.mditems['wcs']['htmlUrl'] = urlparse.urljoin(cfg['viewurlprefix'], self.mditems['wcs']['fileIdentifier'])
-                self.mditems['wcs']['xmlUrl'] = urlparse.urljoin(cfg['xmlurlprefix'], self.mditems['wcs']['fileIdentifier'])
-                self.mditems['wcs']['dateMD'] = datetime.datetime.now().strftime('%Y-%m-%d')
-                self.mditems['wcs']['dateCreation'] = datetime.datetime.now().strftime('%Y-%m-%d')
-                self.mditems['wcs']['dateRevision'] =   self.mditems['wcs']['dateCreation']
-                self.mditems['wcs']['getCapabilitiesUrl'] = urlparse.urljoin('https://'+cfg['domain'], '/geoserver/'+name+'/wcs?SERVICE=WCS&amp;REQUEST=GetCapabilities&amp;')
-                self.mditems['wcs']['title'] = self.wcs_json['wcs']['title']
-                self.mditems['wcs']['abstract'] = self.wcs_json['wcs']['abstrct']
-                self.mditems['wcs']['bbox']['minx'] = min_x_cv
-                self.mditems['wcs']['bbox']['miny'] = min_y_cv
-                self.mditems['wcs']['bbox']['maxx'] = max_x_cv
-                self.mditems['wcs']['bbox']['maxy'] = max_y_cv
+                    self.mditems['wcs']['success'] = True
 
-                self.mditems['wcs']['success'] = True
+                else:
+                    logger.error("found coverages but not WCS conf")
 
             self.mditems['wms']['fileIdentifier'] = cfg['fileIdentifierWmsFormat'].format(name=name)
             self.mditems['wms']['htmlUrl'] = urlparse.urljoin(cfg['viewurlprefix'], self.mditems['wms']['fileIdentifier'])
