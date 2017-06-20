@@ -20,9 +20,6 @@ cfg = {
     'domain': 'acme.org',       # where is georchestra
     'username': 'x',            # an admin username
     'password': 'x',            # an admin password
-    'usewms': True,
-    'usewfs': True,
-    'usewcs': True,
     'namespaces': [
         'ign',
         'geob_loc'
